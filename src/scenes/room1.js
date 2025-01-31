@@ -1,12 +1,13 @@
-import { setMapColliders } from "./roomUtils.js";
+import { setBackgroundColor, setMapColliders } from "./roomUtils.js";
 import { makePlayer } from "../entities/player.js";
 
 export function room1(k, roomData, previousSceneData) {
+    setBackgroundColor(k, "#0e1536");
     const roomLayers = roomData.layers;
     const map=k.add([k.pos(0,0), k.sprite('room1')]);
 
     k.setGravity(1000);
-    
+
     const colliders = []
     const spawners = []
 
