@@ -29,6 +29,21 @@ const loadPlayerSprites = () => {
   });
 };
 
+const loadSkeletonSprites = () => {
+  const sprites = [
+    { name: "skeletonIdle", path: "./assets/Skeleton/Idle.png", sliceX: 7, anims: { idle: { from: 0, to: 6, loop: true } } },
+    { name: "skeletonWalk", path: "./assets/Skeleton/Walk.png", sliceX: 7, anims: { move: { from: 0, to: 6, loop: true } } },
+    { name: "skeletonAttack", path: "./assets/Skeleton/Attack_3.png", sliceX: 4, anims: { attack: { from: 0, to: 3, speed: 16 } } },
+    { name: "skeletonDeath", path: "./assets/Skeleton/Dead.png", sliceX: 4, anims: { death: { from: 0, to: 3 } } },
+  ];
+
+  sprites.forEach(({ name, path, sliceX, anims }) => {
+    k.loadSprite(name, path, { sliceX, anims });
+  });
+}
+
 loadPlayerSprites();
+
+loadSkeletonSprites();
 
 k.loadSprite("room1", "./maps/room1.png");

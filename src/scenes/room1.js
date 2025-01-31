@@ -1,5 +1,6 @@
 import { setBackgroundColor,setMapColliders } from "./roomUtils.js";
 import { makePlayer } from "../entities/player.js";
+import { makeSkeleton } from "../entities/skeleton.js";
 
 export function room1(k, roomData, previousSceneData) {
     setBackgroundColor(k, "#0e1536");
@@ -34,7 +35,9 @@ export function room1(k, roomData, previousSceneData) {
         }
 
         if (spawner.type === "skeleton") {
-            //TODO: Add skeleton spawner
+            const skeleton = map.add(makeSkeleton(k));
+            skeleton.setPosition(spawner.x, spawner.y);
+            // TODO: skeleton.setAI();
         }
     }
 }

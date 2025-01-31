@@ -39,7 +39,7 @@ export function makePlayer(k, initialPos) {
                 this.controlHandlers.push(
                     k.onKeyDown("shift", () => {
                         this.isRunning = true;
-                        this.speed = PLAYER_SPEED * 1.5;
+                        this.speed = PLAYER_SPEED * 1.8;
                         if (this.isGrounded() && (k.isKeyDown("left") || k.isKeyDown("right"))) {
                             this.setSprite("playerRun", "run");
                         }
@@ -60,11 +60,11 @@ export function makePlayer(k, initialPos) {
                     k.onKeyPress("space", () => {
                         if (this.isGrounded()) {
                             this.jumpCount = 1;
-                            this.jump(320);
+                            this.jump(this.isRunning ? 380: 320);
                             this.setSprite("playerJump", "jump");
                         } else if (this.jumpCount === 1) {
                             this.jumpCount = 2;
-                            this.jump(280);
+                            this.jump(320);
                             this.setSprite("playerJump", "jump");
                         }
                     })
