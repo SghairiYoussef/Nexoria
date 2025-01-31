@@ -1,4 +1,4 @@
-import { setBackgroundColor, setMapColliders } from "./roomUtils.js";
+import { setBackgroundColor,setMapColliders } from "./roomUtils.js";
 import { makePlayer } from "../entities/player.js";
 
 export function room1(k, roomData, previousSceneData) {

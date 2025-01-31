@@ -18,6 +18,7 @@ export function makePlayer(k, initialPos) {
             isRunning: false,
             isAttacking: false,
             isShielding: false,
+            jumpCount: 0,
 
             setPosition(x, y) {
                 this.pos.x = x;
@@ -25,7 +26,11 @@ export function makePlayer(k, initialPos) {
             },
 
             setSprite(spriteName, animName) {
-                if (this.curAnim() === animName) return;
+                if (spriteName !== "run") {
+                    if (this.curAnim() === animName) return;
+                    this.use(k.sprite(spriteName));
+                    this.play(animName);
+                }
                 this.use(k.sprite(spriteName));
                 this.play(animName);
             },
@@ -36,7 +41,7 @@ export function makePlayer(k, initialPos) {
                 this.controlHandlers.push(
                     k.onKeyDown("shift", () => {
                         this.isRunning = true;
-                        this.speed = PLAYER_SPEED * 1.5;
+                        this.speed = PLAYER_SPEED * 1.8;
                     })
                 );
 
@@ -50,13 +55,13 @@ export function makePlayer(k, initialPos) {
                 this.controlHandlers.push(
                     k.onKeyPress("space", () => {
                         if (this.isGrounded()) {
+                            this.jumpCount = 1;
                             this.jump(320);
                             this.setSprite("playerJump", "jump");
-                            k.wait(0.2, () => {
-                                if (!this.isGrounded()) {
-                                    this.setSprite("playerJump", "jump");
-                                }
-                            });
+                        } else if (this.jumpCount === 1) {
+                            this.jumpCount = 2;
+                            this.jump(280);
+                            this.setSprite("playerJump", "jump");
                         }
                     })
                 );
@@ -115,9 +120,24 @@ export function makePlayer(k, initialPos) {
 
                 this.controlHandlers.push(
                     k.onUpdate(() => {
+                        if (this.isGrounded()) {
+                            this.jumpCount = 0;
+                        }
                         if (this.isGrounded() && this.curAnim() === "jump") {
                             this.setSprite("playerIdle", "idle");
                         }
+                    })
+                );
+
+                this.controlHandlers.push(
+                    k.onUpdate(() => {
+                        const minX = 100, maxX = 2000;
+                        const minY = 100, maxY = 1000;
+
+                        const camX = Math.max(minX, Math.min(this.pos.x, maxX));
+                        const camY = Math.max(minY, Math.min(this.pos.y, maxY));
+
+                        k.camPos(camX, camY);
                     })
                 );
             },

@@ -16,12 +16,12 @@ export const k = kaboom({
 const loadPlayerSprites = () => {
   const sprites = [
     { name: "playerIdle", path: "./assets/Player/Idle.png", sliceX: 6, anims: { idle: { from: 0, to: 5, loop: true } } },
-    { name: "playerRun", path: "./assets/Player/Run.png", sliceX: 8, anims: { move: { from: 0, to: 7, loop: true } } },
+    { name: "playerRun", path: "./assets/Player/Run.png", sliceX: 8, anims: { move: { from: 0, to: 7, loop: true, speed: 16 } } },
     { name: "playerJump", path: "./assets/Player/Jump.png", sliceX: 12, anims: { jump: { from: 0, to: 11, speed: 12 } } },
-    { name: "playerAttack", path: "./assets/Player/Attack_1.png", sliceX: 5, anims: { attack: { from: 0, to: 4 } } },
+    { name: "playerAttack", path: "./assets/Player/Attack_1.png", sliceX: 5, anims: { attack: { from: 0, to: 4, speed: 16 } } },
     { name: "playerDeath", path: "./assets/Player/dead.png", sliceX: 4, anims: { death: { from: 0, to: 3 } } },
     { name: "playerWalk", path: "./assets/Player/Walk.png", sliceX: 8, anims: { move: { from: 0, to: 7, loop: true } } },
-    { name: "playerShield", path: "./assets/Player/Shield.png", sliceX: 4, anims: { shield: { from: 0, to: 3 } } },
+    { name: "playerShield", path: "./assets/Player/Shield.png", sliceX: 4, anims: { shield: { from: 0, to: 3, loop: true, speed: 16 } } },
   ];
 
   sprites.forEach(({ name, path, sliceX, anims }) => {
