@@ -19,6 +19,7 @@ export function makePlayer(k, initialPos) {
             isAttacking: false,
             isShielding: false,
             jumpCount: 0,
+            direction: 1, // 1 = facing right, -1 = facing left
 
             setPosition(x, y) {
                 this.pos.x = x;
@@ -26,13 +27,10 @@ export function makePlayer(k, initialPos) {
             },
 
             setSprite(spriteName, animName) {
-                if (spriteName !== "run") {
-                    if (this.curAnim() === animName) return;
-                    this.use(k.sprite(spriteName));
-                    this.play(animName);
-                }
+                if (this.curAnim() === animName) return;
                 this.use(k.sprite(spriteName));
                 this.play(animName);
+                this.flipX = this.direction === -1;
             },
 
             setControls() {
@@ -41,7 +39,10 @@ export function makePlayer(k, initialPos) {
                 this.controlHandlers.push(
                     k.onKeyDown("shift", () => {
                         this.isRunning = true;
-                        this.speed = PLAYER_SPEED * 1.8;
+                        this.speed = PLAYER_SPEED * 1.5;
+                        if (this.isGrounded() && (k.isKeyDown("left") || k.isKeyDown("right"))) {
+                            this.setSprite("playerRun", "run");
+                        }
                     })
                 );
 
@@ -49,6 +50,9 @@ export function makePlayer(k, initialPos) {
                     k.onKeyRelease("shift", () => {
                         this.isRunning = false;
                         this.speed = PLAYER_SPEED;
+                        if (this.isGrounded() && (k.isKeyDown("left") || k.isKeyDown("right"))) {
+                            this.setSprite("playerWalk", "move");
+                        }
                     })
                 );
 
@@ -96,23 +100,25 @@ export function makePlayer(k, initialPos) {
                     k.onKeyDown((key) => {
                         if (key === "left") {
                             this.move(-this.speed, 0);
+                            this.direction = -1;
                             this.flipX = true;
                             if (!this.isAttacking && this.isGrounded()) {
-                                this.setSprite(this.isRunning ? "playerRun" : "playerWalk", "move");
+                                this.setSprite(this.isRunning ? "playerRun" : "playerWalk", this.isRunning ? "run" : "move");
                             }
                         } else if (key === "right") {
                             this.move(this.speed, 0);
+                            this.direction = 1;
                             this.flipX = false;
                             if (!this.isAttacking && this.isGrounded()) {
-                                this.setSprite(this.isRunning ? "playerRun" : "playerWalk", "move");
+                                this.setSprite(this.isRunning ? "playerRun" : "playerWalk", this.isRunning ? "run" : "move");
                             }
                         }
                     })
                 );
 
                 this.controlHandlers.push(
-                    k.onKeyRelease(() => {
-                        if (this.isGrounded() && (this.curAnim() === "move" || this.curAnim() === "run")) {
+                    k.onKeyRelease((key) => {
+                        if ((key === "left" || key === "right") && this.isGrounded()) {
                             this.setSprite("playerIdle", "idle");
                         }
                     })
@@ -123,8 +129,19 @@ export function makePlayer(k, initialPos) {
                         if (this.isGrounded()) {
                             this.jumpCount = 0;
                         }
+
                         if (this.isGrounded() && this.curAnim() === "jump") {
                             this.setSprite("playerIdle", "idle");
+                        }
+                    })
+                );
+
+                this.controlHandlers.push(
+                    k.onUpdate(() => {
+                        if (this.isRunning && this.isGrounded() && (k.isKeyDown("left") || k.isKeyDown("right"))) {
+                            this.setSprite("playerRun", "run");
+                        } else if (!this.isRunning && this.isGrounded() && (k.isKeyDown("left") || k.isKeyDown("right"))) {
+                            this.setSprite("playerWalk", "move");
                         }
                     })
                 );
