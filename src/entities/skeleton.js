@@ -1,6 +1,6 @@
-export function makeSkeleton(k) {
+export function makeSkeleton(k, initialPos) {
     return k.make([
-        k.pos(),
+        k.pos(initialPos),
         k.sprite("skeletonIdle"),
         k.area({
             shape: new k.Rect(k.vec2(0, 18), 24, 74),
@@ -39,10 +39,21 @@ export function makeSkeleton(k) {
             attack() {
                 if (!this.attackCooldown) {
                     this.attackCooldown = true;
+                    this.add([
+                        k.pos(this.flipX ? -25 : 0,10),
+                        k.area({ 
+                            shape: new k.Rect(k.vec2(0), 40, 60),
+                         }),
+                        "skeletonHitbox",
+                    ])
                     this.setSprite("skeletonAttack", "attack");
-                    k.wait(0.8, () => {
-                        this.attackCooldown = false;
-                    });
+                    this.onAnimEnd((anim) => {
+                        if (anim === "attack") {
+                            this.attackCooldown = false;
+                            const hitbox = k.get("skeletonHitbox", { recursive: true })[0];
+                            if (hitbox) k.destroy(hitbox);
+                        }
+                    })
                 }
             },
 
@@ -136,6 +147,16 @@ export function makeSkeleton(k) {
                     if (this.hp() <= 0 && this.state !== "death") {
                         this.enterState("death");
                     }
+                });
+            },
+
+            setEvents() {
+                this.onCollide("swordHitbox", () => {
+                    this.hurt(1);
+                });
+
+                this.onExitScreen(()=>{
+                    this.pos = initialPos;
                 });
             }
         }

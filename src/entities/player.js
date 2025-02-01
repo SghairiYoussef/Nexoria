@@ -10,7 +10,7 @@ export function makePlayer(k, initialPos) {
         k.anchor("center"),
         k.body(),
         k.opacity(1),
-        k.health(3),
+        k.health(10),
         k.scale(0.75),
         "player",
         {
@@ -18,8 +18,10 @@ export function makePlayer(k, initialPos) {
             isRunning: false,
             isAttacking: false,
             isShielding: false,
+            isMoving: false,
+            isDead: false,  // Prevents multiple death triggers
             jumpCount: 0,
-            direction: 1, // 1 = facing right, -1 = facing left
+            direction: 1,
 
             setPosition(x, y) {
                 this.pos.x = x;
@@ -40,7 +42,7 @@ export function makePlayer(k, initialPos) {
                     k.onKeyDown("shift", () => {
                         this.isRunning = true;
                         this.speed = PLAYER_SPEED * 1.8;
-                        if (this.isGrounded() && (k.isKeyDown("left") || k.isKeyDown("right"))) {
+                        if (this.isGrounded() && this.isMoving) {
                             this.setSprite("playerRun", "run");
                         }
                     })
@@ -50,7 +52,7 @@ export function makePlayer(k, initialPos) {
                     k.onKeyRelease("shift", () => {
                         this.isRunning = false;
                         this.speed = PLAYER_SPEED;
-                        if (this.isGrounded() && (k.isKeyDown("left") || k.isKeyDown("right"))) {
+                        if (this.isGrounded() && this.isMoving) {
                             this.setSprite("playerWalk", "move");
                         }
                     })
@@ -60,7 +62,7 @@ export function makePlayer(k, initialPos) {
                     k.onKeyPress("space", () => {
                         if (this.isGrounded()) {
                             this.jumpCount = 1;
-                            this.jump(this.isRunning ? 380: 320);
+                            this.jump(this.isRunning ? 380 : 320);
                             this.setSprite("playerJump", "jump");
                         } else if (this.jumpCount === 1) {
                             this.jumpCount = 2;
@@ -70,22 +72,27 @@ export function makePlayer(k, initialPos) {
                     })
                 );
 
+                // Attack only when not moving
                 this.controlHandlers.push(
                     k.onKeyPress("w", () => {
-                        if (!this.isAttacking && !this.isShielding) {
+                        if (!this.isAttacking && !this.isShielding && !this.isMoving) {
                             this.isAttacking = true;
+                            this.add([
+                                k.pos(this.flipX ? -50 : 0, 10),
+                                k.area({
+                                    shape: new k.Rect(k.vec2(0), 50, 10),
+                                }),
+                                "swordHitbox",
+                            ]);
                             this.setSprite("playerAttack", "attack");
-                            k.wait(0.5, () => {
-                                this.isAttacking = false;
-                                if (this.isGrounded()) this.setSprite("playerIdle", "idle");
-                            });
                         }
                     })
                 );
 
+                // Shield only when not moving
                 this.controlHandlers.push(
                     k.onKeyPress("x", () => {
-                        if (!this.isAttacking && !this.isShielding) {
+                        if (!this.isAttacking && !this.isShielding && !this.isMoving) {
                             this.isShielding = true;
                             this.setSprite("playerShield", "shield");
                             k.wait(0.5, () => {
@@ -98,18 +105,18 @@ export function makePlayer(k, initialPos) {
 
                 this.controlHandlers.push(
                     k.onKeyDown((key) => {
-                        if (key === "left") {
+                        if (key === "left" && !this.isAttacking) {
                             this.move(-this.speed, 0);
                             this.direction = -1;
-                            this.flipX = true;
-                            if (!this.isAttacking && this.isGrounded()) {
+                            this.isMoving = true;
+                            if (this.isGrounded()) {
                                 this.setSprite(this.isRunning ? "playerRun" : "playerWalk", this.isRunning ? "run" : "move");
                             }
-                        } else if (key === "right") {
+                        } else if (key === "right" && !this.isAttacking) {
                             this.move(this.speed, 0);
                             this.direction = 1;
-                            this.flipX = false;
-                            if (!this.isAttacking && this.isGrounded()) {
+                            this.isMoving = true;
+                            if (this.isGrounded()) {
                                 this.setSprite(this.isRunning ? "playerRun" : "playerWalk", this.isRunning ? "run" : "move");
                             }
                         }
@@ -119,6 +126,7 @@ export function makePlayer(k, initialPos) {
                 this.controlHandlers.push(
                     k.onKeyRelease((key) => {
                         if ((key === "left" || key === "right") && this.isGrounded()) {
+                            this.isMoving = false;
                             this.setSprite("playerIdle", "idle");
                         }
                     })
@@ -129,7 +137,6 @@ export function makePlayer(k, initialPos) {
                         if (this.isGrounded()) {
                             this.jumpCount = 0;
                         }
-
                         if (this.isGrounded() && this.curAnim() === "jump") {
                             this.setSprite("playerIdle", "idle");
                         }
@@ -138,9 +145,9 @@ export function makePlayer(k, initialPos) {
 
                 this.controlHandlers.push(
                     k.onUpdate(() => {
-                        if (this.isRunning && this.isGrounded() && (k.isKeyDown("left") || k.isKeyDown("right"))) {
+                        if (this.isRunning && this.isGrounded() && this.isMoving) {
                             this.setSprite("playerRun", "run");
-                        } else if (!this.isRunning && this.isGrounded() && (k.isKeyDown("left") || k.isKeyDown("right"))) {
+                        } else if (!this.isRunning && this.isGrounded() && this.isMoving) {
                             this.setSprite("playerWalk", "move");
                         }
                     })
@@ -164,6 +171,48 @@ export function makePlayer(k, initialPos) {
                     handler.cancel();
                 }
             },
+
+            setEvents() {
+                this.onFall(() => {
+                    this.setSprite("playerJump", "jump");
+                });
+
+                this.onGround(() => {
+                    if (this.curAnim() === "jump") {
+                        this.setSprite("playerIdle", "idle");
+                    }
+                });
+
+                this.on("hurt", () => {
+                    if (this.hp() <= 0 && !this.isDead) {
+                        this.isDead = true;
+                        this.trigger("death");
+                    }
+                });
+
+                this.on("death", () => {
+                    this.disableControls();
+                    this.setSprite("playerDeath", "death");
+                });
+
+                this.onCollide("skeletonHitbox", () => {
+                    if (this.isShielding) return;
+                    this.hurt(1);
+                });
+
+                this.onAnimEnd((anim) => {
+                    if (anim === "attack" && this.isAttacking) {
+                        const swordHitbox = k.get("swordHitbox", { recursive: true })[0];
+                        if (swordHitbox) k.destroy(swordHitbox);
+                        this.isAttacking = false;
+                        if (this.isGrounded()) this.setSprite("playerIdle", "idle");
+                    }
+
+                    if (anim === "death" && this.isDead) {
+                        k.go("gameover");
+                    }
+                });
+            }
         }
     ]);
 }

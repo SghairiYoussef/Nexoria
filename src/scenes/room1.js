@@ -31,6 +31,7 @@ export function room1(k, roomData, previousSceneData) {
         if (spawner.name === "Player") {
             player.setPosition(spawner.x , spawner.y );
             player.setControls();
+            player.setEvents();
             continue;
         }
 
