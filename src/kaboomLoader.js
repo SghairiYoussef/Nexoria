@@ -35,6 +35,8 @@ const loadSkeletonSprites = () => {
     { name: "skeletonWalk", path: "./assets/Skeleton/Walk.png", sliceX: 7, anims: { move: { from: 0, to: 6, loop: true } } },
     { name: "skeletonAttack", path: "./assets/Skeleton/Attack_3.png", sliceX: 4, anims: { attack: { from: 0, to: 3, speed: 16 } } },
     { name: "skeletonDeath", path: "./assets/Skeleton/Dead.png", sliceX: 4, anims: { death: { from: 0, to: 3 } } },
+    { name: "skeletonRun", path: "./assets/Skeleton/Run.png", sliceX: 8, anims: { run: { from: 0, to: 7, loop: true, speed: 16 } }
+    }
   ];
 
   sprites.forEach(({ name, path, sliceX, anims }) => {

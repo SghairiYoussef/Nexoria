@@ -37,7 +37,7 @@ export function room1(k, roomData, previousSceneData) {
         if (spawner.type === "skeleton") {
             const skeleton = map.add(makeSkeleton(k));
             skeleton.setPosition(spawner.x, spawner.y);
-            // TODO: skeleton.setAI();
+            skeleton.setAI();
         }
     }
 }
