@@ -39,6 +39,7 @@ export function room1(k, roomData, previousSceneData) {
             const skeleton = map.add(makeSkeleton(k));
             skeleton.setPosition(spawner.x, spawner.y);
             skeleton.setAI();
+            skeleton.setEvents();
         }
     }
 }
